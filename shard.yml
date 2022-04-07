@@ -1,0 +1,15 @@
+name: color-logging
+version: 0.1.0
+
+authors:
+  - Troy Sornson <troy@sornson.io>
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 0.13.0
+
+
+crystal: 1.4.0
+
+license: MIT
