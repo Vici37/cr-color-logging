@@ -8,8 +8,8 @@ This shard adds a new module `ColorLogging` as well as a new short formatter `Sh
 
    ```yaml
    dependencies:
-     color-logging:
-       github: vici37/color-logging
+     cr-color-logging:
+       github: vici37/cr-color-logging
    ```
 
 2. Run `shards install`
@@ -17,7 +17,7 @@ This shard adds a new module `ColorLogging` as well as a new short formatter `Sh
 ## Usage
 
 ```crystal
-require "color-logging"
+require "cr-color-logging"
 
 # This will output all debug and above severity log lines to STDOUT, colored via the ShortColorFormat formatter.
 # By default, no colors are set and must be defined.
