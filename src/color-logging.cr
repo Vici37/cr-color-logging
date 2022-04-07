@@ -22,13 +22,15 @@ module ColorLogging
   abstract struct ColorFormatter
     extend ::Log::Formatter
 
-    class_getter color_map
     @@color_map = {} of String => Symbol
+    @@severity_color_map = {} of Log::Severity => Symbol
 
     macro define_colorized_method(name, method_override = nil, conditional = nil)
     def {{name.id}}(*, before = nil, after = nil)
       {% if conditional %}{{conditional.id}}{% end %}
-        @io << before.colorize(color_for("{{name.id}}", "before")) << {{method_override ? method_override.id : "@entry.#{name.id}".id}}.colorize(color_for("{{name.id}}")) << after.colorize(color_for("{{name.id}}", "after"))
+        @io << before.colorize(color_for("{{name.id}}", "before")) if before
+        @io << {{method_override ? method_override.id : "@entry.#{name.id}".id}}.colorize(color_for("{{name.id}}"))
+        @io << after.colorize(color_for("{{name.id}}", "after")) if after
       {% if conditional %}end{% end %}
     end
     end
@@ -37,11 +39,19 @@ module ColorLogging
       @@color_map[prop] = color
     end
 
+    def self.with_colored_severity(severity : Log::Severity, color : Symbol)
+      @@severity_color_map[severity] = color
+    end
+
     def initialize(@entry : Log::Entry, @io : IO)
     end
 
     private def color_for(prop : String, modifier : String = "") : Symbol
-      @@color_map["#{modifier}_#{prop}"]? || @@color_map.fetch(prop, :default)
+      if @@severity_color_map.empty?
+        @@color_map["#{modifier}_#{prop}"]? || @@color_map.fetch(prop, :default)
+      else
+        @@severity_color_map.fetch(@entry.severity, :default)
+      end
     end
 
     define_colorized_method(timestamp, @entry.timestamp.to_rfc3339(fraction_digits: 6))
