@@ -49,7 +49,7 @@ pid
 string
 ```
 
-The `ShortColorFormat` was defined using the same string as the standard `ShortFormat` (here)[https://github.com/crystal-lang/crystal/blob/ef05e26d6/src/log/format.cr#L201]. A similar macro is also defined for the `ColorLogging` module to define custom formats as well:
+The `ShortColorFormat` was defined using the same string as the standard `ShortFormat` [here](https://github.com/crystal-lang/crystal/blob/ef05e26d6/src/log/format.cr#L201). A similar macro is also defined for the `ColorLogging` module to define custom formats as well:
 
 ```crystal
 ColorFormat.define_formatter MyFormat "#{timestamp(after: ":")} #{severity(before: "[", after: "]")} #{message}"

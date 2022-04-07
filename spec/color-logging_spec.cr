@@ -1,5 +1,14 @@
 require "./spec_helper"
 
+struct Log::ShortColorFormat
+  class_getter color_map, severity_color_map
+end
+
+Spec.before_each do
+  Log::ShortColorFormat.color_map.clear
+  Log::ShortColorFormat.severity_color_map.clear
+end
+
 describe Log::ShortColorFormat do
   zero_timestamp = Time.unix(0)
 
