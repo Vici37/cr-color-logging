@@ -4,6 +4,19 @@ require "log"
 module ColorLogging
   macro define_formatter(name, pattern)
     struct {{name}} < ColorLogging::ColorFormatter
+      class_getter color_map, severity_color_map
+
+      @@color_map = {} of String => Symbol
+      @@severity_color_map = {} of Log::Severity => Symbol
+
+      def color_map
+        {{name.id}}.color_map
+      end
+
+      def severity_color_map
+        {{name.id}}.severity_color_map
+      end
+
       def run
         {% for part in pattern.expressions %}
           {% if part.is_a?(StringLiteral) %}
@@ -22,11 +35,8 @@ module ColorLogging
   abstract struct ColorFormatter
     extend ::Log::Formatter
 
-    @@color_map = {} of String => Symbol
-    @@severity_color_map = {} of Log::Severity => Symbol
-
     macro define_colorized_method(name, method_override = nil, conditional = nil)
-    def {{name.id}}(*, before = nil, after = nil)
+    private def {{name.id}}(*, before = nil, after = nil)
       {% if conditional %}{{conditional.id}}{% end %}
         @io << before.colorize(color_for("{{name.id}}", "before")) if before
         @io << {{method_override ? method_override.id : "@entry.#{name.id}".id}}.colorize(color_for("{{name.id}}"))
@@ -47,10 +57,10 @@ module ColorLogging
     end
 
     private def color_for(prop : String, modifier : String = "") : Symbol
-      if @@severity_color_map.empty?
-        @@color_map["#{modifier}_#{prop}"]? || @@color_map.fetch(prop, :default)
+      if !severity_color_map.has_key?(@entry.severity)
+        color_map["#{modifier}_#{prop}"]? || @@color_map.fetch(prop, :default)
       else
-        @@severity_color_map.fetch(@entry.severity, :default)
+        severity_color_map.fetch(@entry.severity, :default)
       end
     end
 

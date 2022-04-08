@@ -9,6 +9,8 @@ Spec.before_each do
   Log::ShortColorFormat.severity_color_map.clear
 end
 
+ColorLogging.define_formatter ::TestFormat, "#{timestamp(after: ":")} #{severity} #{source} #{message}#{data}#{context}"
+
 describe Log::ShortColorFormat do
   zero_timestamp = Time.unix(0)
 
@@ -85,5 +87,27 @@ describe Log::ShortColorFormat do
     formatter.run
 
     io.to_s.should eq "\e[97m1970-01-01T00:00:00.000000Z\e[0m\e[97m \e[0m\e[97mINFO  \e[0m\e[97m - \e[0m\e[97mmysource\e[0m\e[97m: \e[0m\e[97mmymessage\e[0m\e[97m -- \e[0m\e[97mdata: \"yes\"\e[0m\e[97m (Exception)\n\e[0m"
+  end
+
+  it "supports new formats" do
+    io = String::Builder.new
+    entry = Log::Entry.new(
+      "mysource",
+      Log::Severity::Info,
+      "mymessage",
+      Log::Metadata.new(entries: {data: "yes"}),
+      Exception.new,
+      timestamp: zero_timestamp)
+
+    TestFormat.with_colored_severity(Log::Severity::Info, :blue)
+
+    # This coloring won't matter and will be overridden by the above coloring
+    TestFormat.with_color("timestamp", :green)
+
+    formatter = TestFormat.new(entry, io)
+
+    formatter.run
+
+    io.to_s.should eq "\e[34m1970-01-01T00:00:00.000000Z\e[0m\e[34m:\e[0m\e[34m \e[0m\e[34mINFO  \e[0m\e[34m \e[0m\e[34mmysource\e[0m\e[34m \e[0m\e[34mmymessage\e[0m\e[34mdata: \"yes\"\e[0m"
   end
 end
